@@ -1,0 +1,97 @@
+options:
+	p: "&4Skript&6Control &8&l>>> &7"
+
+command /rcontrol [<number=2>]:
+	permission: skript.control
+	trigger:
+		delete {bentity.%player%}
+		loop all entities in radius arg-1 around the player:
+			if loop-entity is not player:
+				set {bentity.%player%} to loop-entity
+				hide {bentity.%player%} from player
+				teleport player to {bentity.%player%}
+				#register team "control.%player%"
+				#set {team.%player%} to team named "control.%player%"
+				#add {bentity.%player%} to team entries of {team.%player%}
+				#add player to team entries of {team.%player%}
+				#set team option collision rule of {team.%player%} to (for other teams)
+				send "%{@p}%Начат контроль над &6%loop-entity%&7."
+				stop
+		send "%{@p}%Не получилось найти сущность!"
+
+command /reverl:
+	permission: skript.control
+	trigger:
+		reveal target entity to player
+        
+		
+#on damage:
+#	damage cause is attack
+#	victim is {bentity.%attacker%}
+#	cancel event
+		
+on right click:
+	{bentity.%player%} is set
+	make {bentity.%player%} swing off hand 
+	
+on left click:
+	{bentity.%player%} is set
+	make {bentity.%player%} swing hand 
+		
+        
+command /sugcontrol:
+	permission: skript.control
+	trigger:
+		if {suggest} is not set:
+			send "%{@p}%Вам не подсказывали сущность недавно!"
+			stop
+		set {bentity.%player%} to {suggest}
+		hide {bentity.%player%} from player
+		teleport player to {bentity.%player%}
+		send "%{@p}%Начат контроль над &6%{bentity.%player%}%&7."
+		delete {suggest}
+
+command /control [<player>]:
+	permission: skript.control
+	trigger:
+		if {bentity.%player%} is set:
+			#unregister team {team.%player%}
+			reveal {bentity.%player%} to player
+			send "%{@p}%Утрачен контроль над &6%{bentity.%player%}%&7."
+			delete {bentity.%player%}
+			stop
+		if target entity is not set:
+			if arg-1 is not set:
+				loop all entities in radius 4 around the target block:
+					if loop-entity is not player:
+						if loop-entity's type is not dropped item:
+							set {suggest} to loop-entity
+							send "%{@p}%Замечена сущность &6<tooltip:&6Нажмите, чтобы начать контроль!><run command:/sugcontrol>%{suggest}%&7 неподалёку."
+							stop
+				send "%{@p}%Не удалось найти сущность!"
+				stop
+		if arg-1 is set:
+			set {bentity.%player%} to arg-1
+		else:
+			set {bentity.%player%} to target entity
+		hide {bentity.%player%} from player
+		teleport player to {bentity.%player%}
+		#register team "control.%player%"
+		#set {team.%player%} to team named "control.%player%"
+		#add {bentity.%player%} to team entries of {team.%player%}
+		#add player to team entries of {team.%player%}
+		#set team option collision rule of {team.%player%} to (for other teams)
+		send "%{@p}%Начат контроль над &6%{bentity.%player%}%&7."
+
+
+every tick:
+	loop all players:
+		if {bentity.%loop-player%} is set:
+			teleport {bentity.%loop-player%} to loop-player
+			if {bentity.%loop-player%} isn't alive:
+				#unregister team {team.%loop-player%}
+				reveal {bentity.%loop-player%} to loop-player
+				send "%{@p}%Утрачен контроль над &6%{bentity.%loop-player%}%&7." to loop-player
+				delete {bentity.%loop-player%}
+			#if {bentity.%loop-player%}'s type is player:
+			#	set {bentity.%loop-player%}'s tool to loop-player's tool
